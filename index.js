@@ -27,30 +27,31 @@ const image = canvas.getContext('2d');
 image.fillStyle = 'black';
 image.fillRect(0, 0, width, height);
 
-function line(x0, y0, x1, y1, image, color) {
+function line(p0, p1, image, color) {
   let steep = false;
+  let ip0, ip1;
 
-  if (Math.abs(x0 - x1) < Math.abs(y0 - y1)) {
-    [x0, y0] = [y0, x0];
-    [x1, y1] = [y1, x1];
+  if (Math.abs(p0.x - p1.x) < Math.abs(p0.y - p1.y)) {
+    ip0 = new Vec2(p0.y, p0.x);
+    ip1 = new Vec2(p1.y, p1.x);
     steep = true;
+  } else {
+    ip0 = new Vec2(p0.x, p0.y);
+    ip1 = new Vec2(p1.x, p1.y);
   }
 
-  if (x0 > x1) {
-    [x0, x1] = [x1, x0];
-    [y0, y1] = [y1, y0];
+  if (ip0.x > ip1.x) {
+    [ip0, ip1] = [ip1, ip0];
   }
 
-  const dx = x1 - x0;
-  const dy = y1 - y0;
-  const derror = Math.abs(dy / dx);
+  const dx = ip1.x - ip0.x;
+  const dy = ip1.y - ip0.y;
   const derror2 = Math.abs(dy) * 2;
   
   let error2 = 0;
-  let error = 0;
-  let y = y0;
+  let y = ip0.y;
 
-  for (let x = x0; x <= x1; x++) {
+  for (let x = ip0.x; x <= ip1.x; x++) {
     if (steep) {
       image.set(y, x, color);
     } else {
@@ -60,7 +61,7 @@ function line(x0, y0, x1, y1, image, color) {
     error2 += derror2;
 
     if (error2 > dx) {
-      y += (y1 > y0 ? 1 : -1);
+      y += (ip1.y > ip0.y ? 1 : -1);
       error2 -= dx * 2;
     }
   }
