@@ -17,8 +17,9 @@ CanvasRenderingContext2D.prototype.set = function(x, y, color) {
 
 const white = 'rgba(255, 255, 255, 255)';
 const red = 'rgba(255, 0, 0, 255)';
-const width = 750;
-const height = 750;
+const green = 'rgba(0, 255, 0, 255)';
+const width = 200;
+const height = width;
 const canvas = document.getElementById('main');
 canvas.width = width;
 canvas.height = height;
@@ -67,32 +68,78 @@ function line(p0, p1, image, color) {
   }
 }
 
-
-const model = new Model(africanHeadStr);
-
-for (let i = 0; i < model.nfaces(); i++) {
-  const face = model.face(i);
-
-  for (let j = 0; j < 3; j++) {
-    const v0 = model.vert(face[j]);
-    const v1 = model.vert(face[(j + 1) % 3]);
-
-    const x0 = (v0.x + 1) * width / 2;
-    const y0 = (v0.y + 1) * height / 2;
-    const x1 = (v1.x + 1) * width / 2;
-    const y1 = (v1.y + 1) * height / 2;
-
-    const r = Math.round(255 / 1.35021 * (v0.z + 0.675105));
-    line(x0, y0, x1, y1, image, `rgba(${r}, ${r}, ${r}, 255)`);
+function triangle(t0, t1, t2, image, color) {
+  if (t0.y === t1.y && t0.y === t2.y) {
+    return;
   }
+
+  [t0, t1, t2] = [t0, t1, t2].sort((a, b) => a.y > b.y ? 1 : -1)
+
+  const totalHeight = t2.y - t0.y;
+
+  for (let i = 0; i < totalHeight; i++) {
+    const secondHalf = i > t1.y - t0.y || t1.y === t0.y;
+    const segmentHeight = secondHalf ? t2.y - t1.y : t1.y - t0.y;
+
+  }
+
+  for (let y = t0.y; y <= t1.y; y++) {
+    const segmentHeight = t1.y - t0.y + 1;
+    const alpha = (y - t0.y) / totalHeight;
+    const beta = (y - t0.y) / segmentHeight;
+
+    let A = new Vec2(t2)
+      .subtract(t0)
+      .multiply(alpha)
+      .add(t0);
+
+    let B = new Vec2(t1)
+      .subtract(t0)
+      .multiply(beta)
+      .add(t0);
+
+    if (A.x > B.x) {
+      [A, B] = [B, A];
+    }
+
+    for (let j = A.x; j <= B.x; j++) {
+      image.set(j, y, color);
+    }
+  }
+
+  for (let y = t1.y; y <= t2.y; y++) {
+    const segmentHeight = t2.y - t1.y + 1;
+    const alpha = (y - t0.y) / totalHeight;
+    const beta = (y - t1.y) / segmentHeight;
+
+    let A = new Vec2(t2)
+      .subtract(t0)
+      .multiply(alpha)
+      .add(t0);
+
+    let B = new Vec2(t2)
+      .subtract(t1)
+      .multiply(beta)
+      .add(t1);
+
+    if (A.x > B.x) {
+      [A, B] = [B, A];
+    }
+
+    for (let j = A.x; j <= B.x; j++) {
+      image.set(j, y, color);
+    }
+  }
+
+  // line(t0, t1, image, color);
+  // line(t1, t2, image, color);
+  // line(t2, t0, image, color);
 }
 
-// function triangle(t0, t1, t2, image, color) {
-//   line(t0, t1, image, color);
-//   line(t1, t2, image, color);
-//   line(t2, t0, image, color);
-// }
+const t0 = [new Vec2(10, 70), new Vec2(50, 160), new Vec2(70, 80)];
+const t1 = [new Vec2(180, 50), new Vec2(150, 1), new Vec2(70, 180)];
+const t2 = [new Vec2(180, 150), new Vec2(120, 160), new Vec2(130, 180)]
 
-// const t0 = [new Vec2(10, 70), new Vec2(50, 160), new Vec2(70, 80)];
-
-// triangle(t0[0], t0[1], t0[2], image, red);
+triangle(t0[0], t0[1], t0[2], image, red);
+triangle(t1[0], t1[1], t1[2], image, white);
+triangle(t2[0], t2[1], t2[2], image, green);
